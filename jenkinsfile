@@ -1,0 +1,42 @@
+pipeline {
+    agent any
+    tools {
+        maven 'mymvn'
+    }
+    environment {
+        Docker_image = "malkhalil/cap_proj:cpv${env.BUILD_NUMBER}"
+        Docker_username = credentials('Docker_username')
+        Docker_password = credentials('Docker_pass')
+        
+        
+    }
+    
+    stages {
+        stage ('code checkout') {
+             steps {
+                 git branch: 'main', url: 'https://github.com/abhijithvg/asi-insurance-abhi'
+             }
+         }
+         stage ('maven build and package') {
+             steps {
+               sh 'mvn clean install'
+            }
+         }
+         stage ('build the docker iamge'){
+             steps {
+               sh  'docker image build -t ${Docker_image} .'
+             }
+         }
+          stage ('push docker image'){
+             steps {
+                 sh 'docker login -u ${Docker_username} -p ${Docker_password}'
+                 sh 'docker push ${Docker_image}'
+             }
+         }
+         stage ('start a docker container from the image') {
+             steps {
+                 sh 'docker run -d -p 32000:8081 ${Docker_image}'  
+             }
+         }
+    }
+}
