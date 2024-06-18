@@ -1,0 +1,34 @@
+---
+- name: configure jenkins server and install java, maven, jenkins and docker.
+  hosts: Jenkins_Server
+  become: true
+  become_user: root 
+  tasks:
+    - name: Update apt package cache
+      apt:
+        update_cache: yes
+    - name: Transfer java-maven the script to the server
+      copy: 
+        src: mvn_script.sh 
+        dest: "/tmp/mvn_script.sh"
+        mode: "0777"  
+    - name: Execute mvn_script.sh to install Java and maven
+      ansible.builtin.shell: /tmp/mvn_script.sh
+    - name: copy the jenkins script to the server
+      copy: 
+        src: jenkins_script.sh 
+        dest: "/tmp/jenkins_script.sh"
+        mode: "0777"  
+    - name: Execute mvn_script.sh to install jenkins
+      ansible.builtin.shell: /tmp/jenkins_script.sh
+    - name: copy the docker script to the server
+      copy: 
+        src: docker_script.sh 
+        dest: "/tmp/docker_script.sh"
+        mode: "0777"  
+    - name: Execute mvn_script.sh to install jenkins
+      ansible.builtin.shell: /tmp/docker_script.sh
+    - name: Run Docker Socket
+      file:
+       path: /var/run/docker.sock
+       mode: '0777' 
